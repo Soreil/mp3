@@ -4,37 +4,30 @@ package mp3
 /*
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
-#include <stdio.h>
 #include <stdlib.h>
 
 int mp3_check(const char * url) {
 	av_register_all();
 	avcodec_register_all();
-
 	AVFormatContext *ctx = NULL;
 	int err = avformat_open_input(&ctx,url,NULL,NULL);
 	if (err < 0) {
 		return -1;
 	}
-
 	err = avformat_find_stream_info(ctx,NULL);
     if (err < 0) {
     	return -1;
     }
-
     AVCodec * codec = NULL;
 	int strm = av_find_best_stream(ctx, AVMEDIA_TYPE_AUDIO, -1, -1, &codec, 0);
 	if (strm < 0) {
 		return -1;
 	}
-
 	AVCodecContext * codecCtx = ctx->streams[strm]->codec;
-
 	err = avcodec_open2(codecCtx, codec, NULL);
 	if (err < 0) {
 		return -1;
 	}
-
 	if (strcmp(codec->name , "mp3")==0) {
 		//Either image data or we are some kind of multimedia codec with mp3 audio
 		if (ctx->nb_streams > 1) {
@@ -42,31 +35,62 @@ int mp3_check(const char * url) {
 			if (strm < 0) {
 				return -1;
 			}
-
 			AVCodecContext * codecCtx = ctx->streams[strm]->codec;
-
 			err = avcodec_open2(codecCtx, codec, NULL);
 			if (err < 0) {
 				return -1;
 			}
 
 			//Lets assume this is our picture!
-			//TODO(sjon): Decode this picture.
 			if (strcmp(codec->name , "mjpeg")==0 || strcmp(codec->name , "png")==0) {
 				return 0;
 			}
-
 			return -1;
 		}
 		return 0;
 	}
-
 	return -1;
+}
+
+AVPacket retrieve_album_art(const char *url) {
+	av_register_all();
+	avcodec_register_all();;
+
+	AVPacket err;
+	err.size = 0;
+
+    if (!url) {
+        return err;
+    }
+
+    AVFormatContext *pFormatCtx = avformat_alloc_context();
+
+    if (avformat_open_input(&pFormatCtx, url, NULL, NULL) != 0) {
+		return err;
+    }
+
+    // read the format headers
+    if (pFormatCtx->iformat->read_header(pFormatCtx) < 0) {
+		return err;
+    }
+
+    // find the first attached picture, if available
+    for (int i = 0; i < pFormatCtx->nb_streams; i++) {
+        if (pFormatCtx->streams[i]->disposition & AV_DISPOSITION_ATTACHED_PIC) {
+            return pFormatCtx->streams[i]->attached_pic;
+		}
+	}
+	return err;
 }
 */
 import "C"
-import "unsafe"
+import (
+	"errors"
+	"unsafe"
+)
 
+//TODO(sjon): Use headers instead like in extract
+//Returns whether or not the file is MP3 based on the streams that reside in it
 func IsMP3(filename string) bool {
 	cs := C.CString(filename)
 	defer C.free(unsafe.Pointer(cs))
@@ -74,4 +98,16 @@ func IsMP3(filename string) bool {
 		return true
 	}
 	return false
+}
+
+//TODO(sjon): Turn in to an image.Image,pay attention to this being different image formats
+func ExtractImage(filename string) ([]byte, error) {
+	cs := C.CString(filename)
+	defer C.free(unsafe.Pointer(cs))
+
+	pkt := C.retrieve_album_art(cs)
+	if pkt.size <= 0 {
+		return nil, errors.New("Failed to extract image")
+	}
+	return C.GoBytes(unsafe.Pointer(pkt.data), pkt.size), nil
 }

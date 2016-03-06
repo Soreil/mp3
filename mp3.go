@@ -15,10 +15,10 @@ int mp3_check(const char * url) {
 		return -1;
 	}
 	err = avformat_find_stream_info(ctx,NULL);
-    if (err < 0) {
-    	return -1;
-    }
-    AVCodec * codec = NULL;
+	if (err < 0) {
+		return -1;
+	}
+	AVCodec * codec = NULL;
 	int strm = av_find_best_stream(ctx, AVMEDIA_TYPE_AUDIO, -1, -1, &codec, 0);
 	if (strm < 0) {
 		return -1;
@@ -59,25 +59,25 @@ AVPacket retrieve_album_art(const char *url) {
 	AVPacket err;
 	err.size = 0;
 
-    if (!url) {
-        return err;
-    }
-
-    AVFormatContext *pFormatCtx = avformat_alloc_context();
-
-    if (avformat_open_input(&pFormatCtx, url, NULL, NULL) != 0) {
+	if (!url) {
 		return err;
-    }
+	}
 
-    // read the format headers
-    if (pFormatCtx->iformat->read_header(pFormatCtx) < 0) {
+	AVFormatContext *pFormatCtx = avformat_alloc_context();
+
+	if (avformat_open_input(&pFormatCtx, url, NULL, NULL) != 0) {
 		return err;
-    }
+	}
 
-    // find the first attached picture, if available
-    for (int i = 0; i < pFormatCtx->nb_streams; i++) {
-        if (pFormatCtx->streams[i]->disposition & AV_DISPOSITION_ATTACHED_PIC) {
-            return pFormatCtx->streams[i]->attached_pic;
+	// read the format headers
+	if (pFormatCtx->iformat->read_header(pFormatCtx) < 0) {
+		return err;
+	}
+
+	// find the first attached picture, if available
+	for (int i = 0; i < pFormatCtx->nb_streams; i++) {
+		if (pFormatCtx->streams[i]->disposition & AV_DISPOSITION_ATTACHED_PIC) {
+			return pFormatCtx->streams[i]->attached_pic;
 		}
 	}
 	return err;

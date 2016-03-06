@@ -2,10 +2,12 @@ package mp3
 
 import (
 	"bytes"
+	"image"
+	_ "image/gif"
+	_ "image/jpeg"
+	_ "image/png"
 	"os"
 	"testing"
-
-	"github.com/Soreil/imager"
 )
 
 const dataDir = "inputData/"
@@ -35,12 +37,11 @@ func TestChecker(t *testing.T) {
 		if IsMP3(test.inputFilename) {
 			if b, err := ExtractImage(test.inputFilename); err == nil {
 				t.Log(test.inputFilename, "has an image inside of it")
-				_, inFmt, outFmt, err := imager.Thumbnail(bytes.NewReader(b), imager.Sharp)
+				_, inFmt, err := image.DecodeConfig(bytes.NewReader(b))
 				if err != nil {
 					t.Fatal(err)
 				}
 				t.Log("Input format:", inFmt)
-				t.Log("Output format:", outFmt)
 			} else {
 				t.Log(err, test)
 			}

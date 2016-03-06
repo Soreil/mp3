@@ -24,7 +24,7 @@ var cases = []testCase{
 	{true, "examplePNG.mp3"},
 }
 
-func TestChecker(t *testing.T) {
+func TestMP3(t *testing.T) {
 	if err := os.Chdir(dataDir); err != nil {
 		if err := os.Mkdir(dataDir, 0755); err != nil {
 			t.Fatal(err)

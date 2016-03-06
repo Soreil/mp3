@@ -100,7 +100,7 @@ func IsMP3(filename string) bool {
 	return false
 }
 
-//TODO(sjon): Turn in to an image.Image,pay attention to this being different image formats
+//Extracts the first image we find in the MP3
 func ExtractImage(filename string) ([]byte, error) {
 	cs := C.CString(filename)
 	defer C.free(unsafe.Pointer(cs))

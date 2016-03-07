@@ -5,6 +5,22 @@ package mp3
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
 #include <stdlib.h>
+#include <stdint.h>
+
+int64_t mp3_duration(const char * url) {
+	av_register_all();
+	avcodec_register_all();
+	AVFormatContext *ctx = NULL;
+	int err = avformat_open_input(&ctx,url,NULL,NULL);
+	if (err < 0) {
+		return -1;
+	}
+	err = avformat_find_stream_info(ctx,NULL);
+	if (err < 0) {
+		return -1;
+	}
+	return ctx->duration;
+}
 
 int mp3_check(const char * url) {
 	av_register_all();
@@ -18,6 +34,7 @@ int mp3_check(const char * url) {
 	if (err < 0) {
 		return -1;
 	}
+
 	AVCodec * codec = NULL;
 	int strm = av_find_best_stream(ctx, AVMEDIA_TYPE_AUDIO, -1, -1, &codec, 0);
 	if (strm < 0) {
@@ -98,6 +115,13 @@ func IsMP3(filename string) bool {
 		return true
 	}
 	return false
+}
+
+//Returns length at a million digits per second scale
+func MP3Duration(filename string) int64 {
+	cs := C.CString(filename)
+	defer C.free(unsafe.Pointer(cs))
+	return int64(C.mp3_duration(cs))
 }
 
 //Extracts the first image we find in the MP3

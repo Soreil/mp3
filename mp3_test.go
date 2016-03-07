@@ -2,6 +2,7 @@ package mp3
 
 import (
 	"bytes"
+	"fmt"
 	"image"
 	_ "image/gif"
 	_ "image/jpeg"
@@ -45,6 +46,7 @@ func TestMP3(t *testing.T) {
 			} else {
 				t.Log(err, test)
 			}
+			fmt.Println("LENGTH:", MP3Duration(test.inputFilename)/1000000)
 		}
 	}
 }

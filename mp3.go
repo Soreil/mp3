@@ -103,6 +103,7 @@ AVPacket retrieve_album_art(const char *url) {
 import "C"
 import (
 	"errors"
+	"time"
 	"unsafe"
 )
 
@@ -117,11 +118,11 @@ func IsMP3(filename string) bool {
 	return false
 }
 
-//Returns length at a million digits per second scale
-func MP3Duration(filename string) int64 {
+//Returns length of the audio
+func MP3Duration(filename string) time.Duration {
 	cs := C.CString(filename)
 	defer C.free(unsafe.Pointer(cs))
-	return int64(C.mp3_duration(cs))
+	return time.Duration(C.mp3_duration(cs)) * 1000
 }
 
 //Extracts the first image we find in the MP3

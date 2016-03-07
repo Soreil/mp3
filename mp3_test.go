@@ -46,7 +46,7 @@ func TestMP3(t *testing.T) {
 			} else {
 				t.Log(err, test)
 			}
-			fmt.Println("LENGTH:", MP3Duration(test.inputFilename)/1000000)
+			fmt.Println("LENGTH:", MP3Duration(test.inputFilename))
 		}
 	}
 }
